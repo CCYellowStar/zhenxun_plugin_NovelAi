@@ -238,7 +238,7 @@ async def _run(keyword: str, W: int, H: int, event: MessageEvent, imgs: list[str
                     withdraw_message_manager.withdraw_message(
                         event,
                         msg_id["message_id"],
-                        Config.get_config("zhenxun_plugin_nai2pic", "WITHDRAW_nai_MESSAGE"),
+                        Config.get_config("zhenxun_plugin_NovelAi", "WITHDRAW_nai_MESSAGE"),
                     )
         processing = False
     except Exception as e:
