@@ -436,6 +436,9 @@ async def translate(_query):
     if not _appid:
         logger.info(f"没有appid")
         return _query
+    if not await is_Chinese(_query):
+        logger.info(f"没有包含中文，不翻译")
+        return _query
     _salt = Config.get_config("zhenxun_plugin_NovelAi", "salt")
     _key = Config.get_config("zhenxun_plugin_NovelAi", "key")
     _sign = f"{_appid}{_query}{_salt}{_key}"
@@ -552,3 +555,10 @@ async def run():
         except Exception as e:
             renshu=renshu-1
             pass
+            
+
+async def is_Chinese(word):
+    for ch in word:
+        if '\u4e00' <= ch <= '\u9fff':
+            return True
+    return False
