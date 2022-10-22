@@ -206,14 +206,18 @@ async def _run(keyword: str, W: int, H: int, event: MessageEvent, imgs: list[str
             img, seed = await runpicapi(tag, W, H, imgs)   
         else:
             img, seed = await runapi(tag, W, H)
-        if len(img)==1:
-            seed ="Seed:"+ seed[0]
-            msg = image(img[0]) + seed
+
+        for i in range(0,len(img)): 
+            Seed ="Seed:"+ seed[i]
+            msg = image(img[i]) + Seed
             try:
                 msg_id = await can.send(msg)
             except ActionFailed:
                 await can.send("坏了，这张图色过头了，没发出去！")
-
+                if i==len(img)-1:
+                    processing = False
+                else:
+                    pass
                 
             if msg_id:
                 withdraw_message_manager.withdraw_message(
@@ -221,25 +225,6 @@ async def _run(keyword: str, W: int, H: int, event: MessageEvent, imgs: list[str
                     msg_id["message_id"],
                     Config.get_config("zhenxun_plugin_NovelAi", "WITHDRAW_nai_MESSAGE"),
                 )
-        else:
-            for i in range(0,len(img)-1): 
-                seed ="Seed:"+ seed[i]
-                msg = image(img[i]) + seed
-                try:
-                    msg_id = await can.send(msg)
-                except ActionFailed:
-                    await can.send("坏了，这张图色过头了，没发出去！")
-                    if i==len(img)-1:
-                        processing = False
-                    else:
-                        pass
-                    
-                if msg_id:
-                    withdraw_message_manager.withdraw_message(
-                        event,
-                        msg_id["message_id"],
-                        Config.get_config("zhenxun_plugin_NovelAi", "WITHDRAW_nai_MESSAGE"),
-                    )
         processing = False
     except Exception as e:
         await can.send(f"出错了！{type(e)}：{e}")
