@@ -11,7 +11,7 @@
   `na作长图 loli,hentai,girl`  
   `na作横图 loli,hentai,girl [图片]`  
   ![image](https://user-images.githubusercontent.com/47291058/197211253-6d567500-027b-4806-8766-c166cc41899d.png)  
-需要指定seed请在关键词前面加seed=******  
+需要指定seed请在关键词前面加seed=******,(记得加逗号）    
   
 **设置公开链接（本地部署sdwebui的公开链接或者本机链接）**  
   
