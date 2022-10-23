@@ -2,7 +2,7 @@
 
 from nonebot import on_regex
 from nonebot.typing import T_State
-from nonebot.adapters.onebot.v11 import Bot, MessageEvent, Message, GroupMessageEvent, Event, ActionFailed
+from nonebot.adapters.onebot.v11 import Bot, MessageEvent, Message, GroupMessageEvent, Event, ActionFailed, PrivateMessageEvent
 from utils.message_builder import image
 from services.log import logger
 from nonebot import on_command
@@ -23,6 +23,7 @@ import hashlib
 import random
 import os
 import asyncio
+
 
 
 __zx_plugin_name__ = "NovelAi作图"
@@ -127,7 +128,7 @@ async def _(
     H = 512
     global q
     global renshu   
-    a=[keyword, W, H, event, ss]
+    a=[bot,keyword, W, H, event, ss]
     await q.put(a)
     renshu=renshu+1
 
@@ -154,7 +155,7 @@ async def _(
     H = 768
     global q
     global renshu   
-    a=[keyword, W, H, event, ss]
+    a=[bot,keyword, W, H, event, ss]
     await q.put(a)
     renshu=renshu+1
 
@@ -181,7 +182,7 @@ async def _(
     H = 512
     global q
     global renshu   
-    a=[keyword, W, H, event, ss]
+    a=[bot,keyword, W, H, event, ss]
     await q.put(a)
     renshu=renshu+1
 
@@ -190,30 +191,51 @@ async def _(
     else:
         await can.send(f"已为你加入队列，后面还有{renshu-1}人")
     
-async def _run(keyword: str, W: int, H: int, event: MessageEvent, imgs: list[str]):
+async def _run(bot: Bot, keyword: str, W: int, H: int, event: MessageEvent, imgs: list[str]):
     global iniit
     global processing
 
  
     if processing:
-        await can.finish("有图片正在生成，请稍等...")
+        await bot.finish("有图片正在生成，请稍等...")
     try:
-        await can.send(f"开始生成...")
+        await bot.send_msg(
+            user_id=event.user_id if isinstance(event, PrivateMessageEvent) else 0,
+            group_id=event.group_id if isinstance(event, GroupMessageEvent) else 0,
+            message="开始生成",
+        )
         tag = await translate(keyword)
         #tag = keyword
         processing = True 
-        if imgs != []:
-            img, seed = await runpicapi(tag, W, H, imgs)   
-        else:
-            img, seed = await runapi(tag, W, H)
-
+        try:
+            if imgs != []:
+                img, seed = await runpicapi(tag, W, H, imgs)   
+            else:
+                img, seed = await runapi(tag, W, H)
+        except Exception as e:
+            await bot.send_msg(
+                user_id=event.user_id if isinstance(event, PrivateMessageEvent) else 0,
+                group_id=event.group_id if isinstance(event, GroupMessageEvent) else 0,
+                message=f"出错了！ {type(e)}：{e}",
+            )
+            processing = False
+            iniit = True
+            return
         for i in range(0,len(img)): 
             Seed ="Seed:"+ seed[i]
             msg = image(img[i]) + Seed
             try:
-                msg_id = await can.send(msg)
+                msg_id = await bot.send_msg(
+                    user_id=event.user_id if isinstance(event, PrivateMessageEvent) else 0,
+                    group_id=event.group_id if isinstance(event, GroupMessageEvent) else 0,
+                    message=msg,
+                )
             except ActionFailed:
-                await can.send("坏了，这张图色过头了，没发出去！")
+                await bot.send_msg(
+                    user_id=event.user_id if isinstance(event, PrivateMessageEvent) else 0,
+                    group_id=event.group_id if isinstance(event, GroupMessageEvent) else 0,
+                    message="坏了，这张图色过头了，没发出去！",
+                )
                 if i==len(img)-1:
                     processing = False
                 else:
@@ -227,7 +249,11 @@ async def _run(keyword: str, W: int, H: int, event: MessageEvent, imgs: list[str
                 )
         processing = False
     except Exception as e:
-        await can.send(f"出错了！{type(e)}：{e}")
+        await bot.send_msg(
+            user_id=event.user_id if isinstance(event, PrivateMessageEvent) else 0,
+            group_id=event.group_id if isinstance(event, GroupMessageEvent) else 0,
+            message=f"出错了！ {type(e)}：{e}",
+        )
         logger.error(f"NovelAi 发送了未知错误 {type(e)}：{e}")
         processing = False
         iniit = True
@@ -266,8 +292,7 @@ async def runapi(tag: str, W: int, H: int):
                 URL = await f.read()
             init = False
     if URL == "":
-        await can.send("请先设置公开链接！")
-        return
+        raise Exception("请先设置公开链接！") 
     tag = tag + "masterpiece,best quality"
     seed = "-1"
     params = {
@@ -302,7 +327,7 @@ async def runapi(tag: str, W: int, H: int):
                 response = await resp.json()
 
     except Exception as e:
-        await can.send(f"请求错误！{type(e)}：{e}")     
+        raise Exception("请求错误！请再试一次")   
     for i in response['images']:    
         img_data = b64decode(i)
     seed = response['seed']
@@ -327,8 +352,7 @@ async def runpicapi(tag: str, W: int, H: int, imgs: list[str]):
             init = False
 
     if URL == "":
-        await can.send("请先设置公开链接！")
-        return
+        raise Exception("请先设置公开链接！") 
     tag = tag + "masterpiece,best quality"
     seed = "-1"
     if tag[:5] == "Seed:" or tag[:5] == "seed:" or tag[:5] == "Seed=" or tag[:5] == "seed=":
@@ -378,7 +402,7 @@ async def runpicapi(tag: str, W: int, H: int, imgs: list[str]):
                     response = await resp.json()
                     responses.append(response)
     except Exception as e:
-        await can.send(f"请求错误！{type(e)}：{e}")  
+        raise Exception("请求错误！请再试一次") 
     imggs=[]    
     seees=[]   
     for ii in responses:  
@@ -533,13 +557,12 @@ async def run():
     global q
     global renshu
     while q.qsize() > 0:
-        keyword, W, H, event, ss = await q.get()
+        bot, keyword, W, H, event, ss = await q.get()
         try:
-            await _run(keyword, W, H, event, ss)
-            renshu=renshu-1
+            await _run(bot, keyword, W, H, event, ss)
         except Exception as e:
-            renshu=renshu-1
             pass
+        renshu=renshu-1
             
 
 async def is_Chinese(word):
