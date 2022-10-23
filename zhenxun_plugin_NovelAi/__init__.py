@@ -426,7 +426,7 @@ async def translate(_query):
     lang = "en"
     _to = lang
     a = _query.replace("，",",")
-    _query = a.replace("：",":").replace(" ","")
+    _query = a.replace("：",":")
     if os.path.exists(jsonpath):
         _query = await ETtranslate(_query)
     elif i < 3:
@@ -496,13 +496,14 @@ async def ETtranslate(_query):
     outt = ""
     try:
         for sst in sstr:
-            text = sst
+            sst1 = sst.strip()
+            text = sst1
             for dictt in json_info["data"]:
                 for key, info in dictt.items():
                     if key == "data" and isinstance(dictt, dict):
                         for key1, dt in info.items():
                             for key11, dt1 in dt.items():
-                                if dt1 == sst:
+                                if dt1 == sst1:
                                     text = key1
             outt = outt + text + ","   
     except Exception as e:
