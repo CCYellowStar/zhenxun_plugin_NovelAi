@@ -441,7 +441,7 @@ async def translate(_query):
             i = i + 1
             await can.send(f"下载失败，最多尝试3次，当前第{i}次，本次跳过词库翻译.{type(e)}：{e}")
             pass
-    _appid = Config.get_config("zhenxun_plugin_nai2pic", "appid")
+    _appid = Config.get_config("zhenxun_plugin_NovelAi", "appid")
     if not _appid:
         logger.info(f"没有appid")
         return _query
