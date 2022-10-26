@@ -21,7 +21,7 @@
 
 
 ## 安装本体与机翻配置
-将`Releases`的压缩包下载的插件文件放到真寻第三方插件目录（没有手动指定就放到`extensive_plugin`）  
+将本分支的压缩包下载的插件文件放到真寻第三方插件目录（没有手动指定就放到`extensive_plugin`）  
 先运行一次机器人，然后关掉，然后在`config.yaml`里刚生成的  
 ![image](https://user-images.githubusercontent.com/47291058/197219144-b60cd585-82a4-48a8-b8de-b0ea6a721cd6.png)  
 填入配置，其中百度机翻的appid和key要在百度翻译的[开发者中心里](http://api.fanyi.baidu.com/product/11)获取(实名认证一下就够用了） 
