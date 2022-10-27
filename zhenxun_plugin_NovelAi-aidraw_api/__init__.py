@@ -300,7 +300,7 @@ async def runapi(tag, S):
             init = False
     if token == "":
         raise Exception("请先设置token！") 
-    tag = tag + "masterpiece,best%20quality"
+    tag = tag + "masterpiece,best quality"
     seed = "-1"
     params = {
         "token": token,
@@ -351,7 +351,7 @@ async def runpicapi(tag, S, imgs):
             init = False
     if token == "":
         raise Exception("请先设置token！") 
-    tag = tag + "masterpiece,best%20quality"
+    tag = tag + "masterpiece,best quality"
     seed = "-1"
     if tag[:5] == "Seed:" or tag[:5] == "seed:" or tag[:5] == "Seed=" or tag[:5] == "seed=":
         [str1, str2] = tag.split(",",1)
@@ -425,10 +425,10 @@ async def translate(_query):
     _appid = Config.get_config("zhenxun_plugin_NovelAi-aidraw_api", "appid")
     if not _appid:
         logger.info(f"没有appid")
-        return _query.replace(" ","%20")
+        return _query
     if not await is_Chinese(_query):
         logger.info(f"没有包含中文，不翻译")
-        return _query.replace(" ","%20")
+        return _query
     _salt = Config.get_config("zhenxun_plugin_NovelAi-aidraw_api", "salt")
     _key = Config.get_config("zhenxun_plugin_NovelAi-aidraw_api", "key")
     _sign = f"{_appid}{_query}{_salt}{_key}"
@@ -464,7 +464,7 @@ async def translate(_query):
     if "error_code" not in json_data.keys():
         _result = json_data['trans_result'][0]
         logger.info(f"翻译完成")
-        return _result['dst'].replace(" ","%20")
+        return _result['dst']
 
     if json_data['error_code'] != "52000":
         await can.send("翻译失败！将使用原文")
