@@ -42,6 +42,7 @@
 填入配置，其中百度机翻的appid和key要在百度翻译的[开发者中心里](http://api.fanyi.baidu.com/product/11)获取(实名认证一下就够用了） 
 如果没填百度的就不会调用机翻，EhTagTranslation词汇翻译还是会调用的  
 其他可以照着我的填  
+**你需要先设置公开链接才能使用**
 
 ## 参考和使用
 [EhTagTranslation](https://github.com/EhTagTranslation/Database)  
