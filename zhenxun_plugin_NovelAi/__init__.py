@@ -222,7 +222,7 @@ async def _run(bot: Bot, keyword: str, W: int, H: int, event: MessageEvent, imgs
             iniit = True
             return
         for i in range(0,len(img)): 
-            Seed ="Seed:"+ seed[i]
+            Seed = seed[i]
             msg = image(img[i]) + Seed
             try:
                 msg_id = await bot.send_msg(
@@ -296,7 +296,6 @@ async def runapi(tag: str, W: int, H: int):
     tag = tag + "masterpiece,best quality"
     seed = "-1"
     params = {
-        "txt2imgreq": {
             "prompt": tag,
             "steps": 24,
             "negative_prompt": uTag,
@@ -304,12 +303,10 @@ async def runapi(tag: str, W: int, H: int):
             "cfg_scale": 11.0,
             "width": W,
             "height": H
-        }
     }
     if tag[:5] == "Seed:" or tag[:5] == "seed:" or tag[:5] == "Seed=" or tag[:5] == "seed=":
         [str1, str2] = tag.split(",",1)
         params = {
-            "txt2imgreq": {
                 "prompt": str2,
                 "steps": 24,
                 "negative_prompt": uTag,
@@ -317,28 +314,28 @@ async def runapi(tag: str, W: int, H: int):
                 "cfg_scale": 11.0,
                 "width": W,
                 "height": H
-            }
         }
     
 
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.post(URL+"v1/txt2img", json=params) as resp:
+            async with session.post(URL+"sdapi/v1/txt2img", json=params) as resp:
                 response = await resp.json()
 
     except Exception as e:
         raise Exception("请求错误！请再试一次")   
     for i in response['images']:    
-        img_data = b64decode(i)
-    seed = response['seed']
-    print(seed)
+        img_data = b64decode(i.split(",",1)[1])
+    info = json.loads(response['info'])
+    meta = info["infotexts"][0]
+    print(meta)
     if Config.get_config("zhenxun_plugin_NovelAi", "DOWNLOAD_nai"):
         async with aiofiles.open(f"{IMAGE_PATH}/temp/NovelAi_{time.time()}.png", 'wb') as fout:
             await fout.write(img_data)
     imggs=[]
     imggs.append(img_data)
     seees=[]
-    seees.append(str(seed))
+    seees.append(str(meta))
     return imggs, seees
 
 async def runpicapi(tag: str, W: int, H: int, imgs: list[str]):   
@@ -360,7 +357,6 @@ async def runpicapi(tag: str, W: int, H: int, imgs: list[str]):
         paramss=[]
         for j in imgs:            
             params = {
-                "img2imgreq": {
                     "prompt": str2,
                     "steps": 24,
                     "negative_prompt": uTag,
@@ -368,9 +364,8 @@ async def runpicapi(tag: str, W: int, H: int, imgs: list[str]):
                     "cfg_scale": 11.0,
                     "width": W,
                     "height": H,
-                    "image": j,
-                    "inpainting_fill": "original",
-                }
+                    "init_images": [";,"+j],
+                    "inpainting_fill": 0,
             }
             paramss.append(params)
         logger.info("上传图片完成")
@@ -378,7 +373,6 @@ async def runpicapi(tag: str, W: int, H: int, imgs: list[str]):
         paramss=[]
         for j in imgs:
             params = {
-                "img2imgreq": {
                     "prompt": tag,
                     "steps": 24,
                     "negative_prompt": uTag,
@@ -386,9 +380,8 @@ async def runpicapi(tag: str, W: int, H: int, imgs: list[str]):
                     "cfg_scale": 11.0,
                     "width": W,
                     "height": H,
-                    "image": j,
-                    "inpainting_fill": "original",
-                }
+                    "init_images": [";,"+j],
+                    "inpainting_fill": 0,
             }
             paramss.append(params)
         logger.info("上传图片完成")
@@ -398,7 +391,7 @@ async def runpicapi(tag: str, W: int, H: int, imgs: list[str]):
         responses=[]
         async with aiohttp.ClientSession() as session:
             for i in paramss:
-                async with session.post(URL+"v1/img2img", json=i) as resp:
+                async with session.post(URL+"sdapi/v1/img2img", json=i) as resp:
                     response = await resp.json()
                     responses.append(response)
     except Exception as e:
@@ -407,14 +400,12 @@ async def runpicapi(tag: str, W: int, H: int, imgs: list[str]):
     seees=[]   
     for ii in responses:  
         for i in ii['images']:    
-            img_data = b64decode(i)
-        html = ii['html']
-        [str1,str2]=html.split("Seed:",1)
-        [strr1,strr2]=str2.split(",",1)
-        seed=strr1.replace(" ","")
+            img_data = b64decode(i.split(",",1)[1])
+        info = json.loads(ii['info'])
+        meta = info["infotexts"][0]
         imggs.append(img_data)
-        seees.append(seed)
-        print(seed)
+        seees.append(meta)
+        print(meta)
         if Config.get_config("zhenxun_plugin_NovelAi", "DOWNLOAD_nai"):
             async with aiofiles.open(f"{IMAGE_PATH}/temp/NovelAi_{time.time()}.png", 'wb') as fout:
                 await fout.write(img_data)
