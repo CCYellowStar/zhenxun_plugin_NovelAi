@@ -19,13 +19,17 @@
 `设置公开链接 公开链接(仅主人使用)`  
 
 ## 安装前置条件
-本插件使用的不是官方的webui，虽然官方也刚出api，但还没有图生图的调用，所以我fork了一个我觉得不错的webuiapi项目，删掉了个影响正常调用的代码。
-所以你需要使用[这个仓库](https://github.com/CCYellowStar/stable-diffusion-webui-api)  
-其他方面都会与官方同步更新  
+~~本插件使用的不是官方的webui，虽然官方也刚出api，但还没有图生图的调用，所以我fork了一个我觉得不错的webuiapi项目，删掉了个影响正常调用的代码。
+所以你需要使用[这个仓库](https://github.com/CCYellowStar/stable-diffusion-webui-api)~~  
+~~其他方面都会与官方同步更新~~  
+现在官方版已更新图生图api，所以本插件移植为[官方版](https://github.com/AUTOMATIC1111/stable-diffusion-webui)  
 **如果你没有部署过sdwebui**   
-请下载那个仓库的压缩包，解压到一个地方运行`webui-user.bat`等他自动部署  
+请下载官方那个仓库的压缩包，解压到一个地方运行`webui-user.bat`等他自动部署  
 **如果你已经部署过sdwebui**   
-也请下载那个仓库的压缩包，覆盖你的sdwebui根目录即可使用  
+也请下载官方那个仓库的压缩包，覆盖你的sdwebui根目录使他更新为最新即可使用  
+**如果你已经部署过我的那个仓库的weiui**   
+你可以选择继续更新[我那个仓库](https://github.com/CCYellowStar/stable-diffusion-webui-api)的版，因为也包含官方api  
+也可以下载[官方版](https://github.com/AUTOMATIC1111/stable-diffusion-webui)的压缩包直接覆盖就替换为官方版了，然后以后的更新跟着官方版  
   
 部署完后，你需要在`webui-user.bat`里的`COMMANDLINE_ARGS=`后面加上`--api`来启用api  
 如果不是本机部署，你需要再加一个`--share`来打开公开链接  
