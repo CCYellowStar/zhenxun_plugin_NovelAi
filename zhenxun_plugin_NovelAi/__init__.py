@@ -10,6 +10,7 @@ from nonebot.rule import to_me
 import ujson as json
 from utils.utils import scheduler
 from nonebot.permission import SUPERUSER
+from nonebot.matcher import Matcher
 from nonebot.params import CommandArg, ArgStr
 from configs.path_config import IMAGE_PATH, DATA_PATH
 from configs.config import NICKNAME, Config
@@ -23,7 +24,7 @@ import hashlib
 import random
 import os
 import asyncio
-
+from nonebot_plugin_guild_patch import GuildMessageEvent
 
 
 __zx_plugin_name__ = "NovelAi作图"
@@ -109,7 +110,16 @@ can = on_command("na作图", aliases={"NovelAi作图","novelai作图","na作方�
 canH = on_command("na作长图", aliases={"NovelAi作长图","novelai作长图"}, block=True, priority=5)
 canW = on_command("na作横图", aliases={"NovelAi作横图","novelai作横图"}, block=True, priority=5)
 set_url = on_command("设置公开链接", block=True, permission=SUPERUSER, priority=5)
-
+upa = on_command("/更新词库文件", block=True, priority=5)
+cana = on_command("/na作图", aliases={"/NovelAi作图","/novelai作图","/na作方图"}, block=True, priority=5)
+canHa = on_command("/na作长图", aliases={"/NovelAi作长图","/novelai作长图"}, block=True, priority=5)
+canWa = on_command("/na作横图", aliases={"/NovelAi作横图","/novelai作横图"}, block=True, priority=5)
+set_urla = on_command("/设置公开链接", block=True, permission=SUPERUSER, priority=5)
+@cana.handle()
+async def _(state: T_State, event: GuildMessageEvent, msg: Message = CommandArg()):
+    text = msg.extract_plain_text().strip()
+    if msg:
+        state["keyword"] = text
 @can.handle()
 async def _(state: T_State, event: MessageEvent, msg: Message = CommandArg()):
     text = msg.extract_plain_text().strip()
@@ -118,6 +128,7 @@ async def _(state: T_State, event: MessageEvent, msg: Message = CommandArg()):
         
 @can.got("keyword", prompt="请输入关键词！(最好英文，用英文逗号隔开)")
 async def _(
+    matcher: Matcher,
     bot: Bot,
     event: MessageEvent,
     state: T_State,
@@ -128,7 +139,7 @@ async def _(
     H = 512
     global q
     global renshu   
-    a=[bot,keyword, W, H, event, ss]
+    a=[matcher,bot,keyword, W, H, event, ss]
     await q.put(a)
     renshu=renshu+1
 
@@ -136,7 +147,32 @@ async def _(
         await asyncio.gather(run())
     else:
         await can.send(f"已为你加入队列，后面还有{renshu-1}人")
-    
+@cana.got("keyword", prompt="请输入关键词！(最好英文，用英文逗号隔开)")
+async def _(
+    matcher: Matcher,
+    bot: Bot,
+    event: GuildMessageEvent,
+    state: T_State,
+    keyword: str = ArgStr("keyword"),
+):
+    ss = await img(event)
+    W = 512
+    H = 512
+    global q
+    global renshu   
+    a=[matcher,bot,keyword, W, H, event, ss]
+    await q.put(a)
+    renshu=renshu+1
+
+    if renshu == 1:
+        await asyncio.gather(run())
+    else:
+        await cana.send(f"已为你加入队列，后面还有{renshu-1}人")
+@canHa.handle()
+async def _(state: T_State, event: GuildMessageEvent, msg: Message = CommandArg()):
+    text = msg.extract_plain_text().strip()
+    if msg:
+        state["keyword"] = text    
 @canH.handle()
 async def _(state: T_State, event: MessageEvent, msg: Message = CommandArg()):
     text = msg.extract_plain_text().strip()
@@ -145,6 +181,7 @@ async def _(state: T_State, event: MessageEvent, msg: Message = CommandArg()):
         
 @canH.got("keyword", prompt="请输入关键词！(最好英文，用英文逗号隔开)")
 async def _(
+    matcher: Matcher,
     bot: Bot,
     event: MessageEvent,
     state: T_State,
@@ -155,7 +192,7 @@ async def _(
     H = 768
     global q
     global renshu   
-    a=[bot,keyword, W, H, event, ss]
+    a=[matcher,bot,keyword, W, H, event, ss]
     await q.put(a)
     renshu=renshu+1
 
@@ -163,7 +200,33 @@ async def _(
         await asyncio.gather(run())
     else:
         await can.send(f"已为你加入队列，后面还有{renshu-1}人")
+@canHa.got("keyword", prompt="请输入关键词！(最好英文，用英文逗号隔开)")
+async def _(
+    matcher: Matcher,
+    bot: Bot,
+    event: GuildMessageEvent,
+    state: T_State,
+    keyword: str = ArgStr("keyword"),
+):
+    ss = await img(event)
+    W = 512
+    H = 768
+    global q
+    global renshu   
+    a=[matcher,bot,keyword, W, H, event, ss]
+    await q.put(a)
+    renshu=renshu+1
 
+    if renshu == 1:
+        await asyncio.gather(run())
+    else:
+        await cana.send(f"已为你加入队列，后面还有{renshu-1}人")        
+
+@canWa.handle()
+async def _(state: T_State, event: GuildMessageEvent, msg: Message = CommandArg()):
+    text = msg.extract_plain_text().strip()
+    if msg:
+        state["keyword"] = text
 @canW.handle()
 async def _(state: T_State, event: MessageEvent, msg: Message = CommandArg()):
     text = msg.extract_plain_text().strip()
@@ -172,6 +235,7 @@ async def _(state: T_State, event: MessageEvent, msg: Message = CommandArg()):
         
 @canW.got("keyword", prompt="请输入关键词！(最好英文，用英文逗号隔开)")
 async def _(
+    matcher: Matcher,
     bot: Bot,
     event: MessageEvent,
     state: T_State,
@@ -182,7 +246,7 @@ async def _(
     H = 512
     global q
     global renshu   
-    a=[bot,keyword, W, H, event, ss]
+    a=[matcher,bot,keyword, W, H, event, ss]
     await q.put(a)
     renshu=renshu+1
 
@@ -190,8 +254,29 @@ async def _(
         await asyncio.gather(run())
     else:
         await can.send(f"已为你加入队列，后面还有{renshu-1}人")
-    
-async def _run(bot: Bot, keyword: str, W: int, H: int, event: MessageEvent, imgs: list[str]):
+@canWa.got("keyword", prompt="请输入关键词！(最好英文，用英文逗号隔开)")
+async def _(
+    matcher: Matcher,
+    bot: Bot,
+    event: GuildMessageEvent,
+    state: T_State,
+    keyword: str = ArgStr("keyword"),
+):
+    ss = await img(event)
+    W = 768
+    H = 512
+    global q
+    global renshu   
+    a=[matcher,bot,keyword, W, H, event, ss]
+    await q.put(a)
+    renshu=renshu+1
+
+    if renshu == 1:
+        await asyncio.gather(run())
+    else:
+        await cana.send(f"已为你加入队列，后面还有{renshu-1}人")
+        
+async def _run(matcher, bot, keyword, W, H, event, imgs):
     global iniit
     global processing
 
@@ -199,11 +284,14 @@ async def _run(bot: Bot, keyword: str, W: int, H: int, event: MessageEvent, imgs
     if processing:
         await bot.finish("有图片正在生成，请稍等...")
     try:
-        await bot.send_msg(
-            user_id=event.user_id if isinstance(event, PrivateMessageEvent) else 0,
-            group_id=event.group_id if isinstance(event, GroupMessageEvent) else 0,
-            message="开始生成",
-        )
+        if isinstance(event, GuildMessageEvent):
+            await matcher.send("开始生成")
+        else:
+            await bot.send_msg(
+                user_id=event.user_id if isinstance(event, PrivateMessageEvent) else 0,
+                group_id=event.group_id if isinstance(event, GroupMessageEvent) else 0,
+                message="开始生成",
+            )
         tag = await translate(keyword)
         #tag = keyword
         processing = True 
@@ -213,11 +301,15 @@ async def _run(bot: Bot, keyword: str, W: int, H: int, event: MessageEvent, imgs
             else:
                 img, seed = await runapi(tag, W, H)
         except Exception as e:
-            await bot.send_msg(
-                user_id=event.user_id if isinstance(event, PrivateMessageEvent) else 0,
-                group_id=event.group_id if isinstance(event, GroupMessageEvent) else 0,
-                message=f"出错了！ {type(e)}：{e}",
-            )
+            if isinstance(event, GuildMessageEvent):
+                await matcher.send(f"出错了！ {type(e)}：{e}")
+            else:
+                await bot.send_msg(
+                    user_id=event.user_id if isinstance(event, PrivateMessageEvent) else 0,
+                    group_id=event.group_id if isinstance(event, GroupMessageEvent) else 0,
+                    message=f"出错了！ {type(e)}：{e}",
+                )            
+
             processing = False
             iniit = True
             return
@@ -225,17 +317,25 @@ async def _run(bot: Bot, keyword: str, W: int, H: int, event: MessageEvent, imgs
             Seed = seed[i]
             msg = image(img[i]) + Seed
             try:
-                msg_id = await bot.send_msg(
-                    user_id=event.user_id if isinstance(event, PrivateMessageEvent) else 0,
-                    group_id=event.group_id if isinstance(event, GroupMessageEvent) else 0,
-                    message=msg,
-                )
+                if isinstance(event, GuildMessageEvent):
+                    msg_id = await matcher.send(msg)
+                else:
+                    msg_id = await bot.send_msg(
+                        user_id=event.user_id if isinstance(event, PrivateMessageEvent) else 0,
+                        group_id=event.group_id if isinstance(event, GroupMessageEvent) else 0,
+                        message=msg,
+                    ) 
+
             except ActionFailed:
-                await bot.send_msg(
-                    user_id=event.user_id if isinstance(event, PrivateMessageEvent) else 0,
-                    group_id=event.group_id if isinstance(event, GroupMessageEvent) else 0,
-                    message="坏了，这张图色过头了，没发出去！",
-                )
+                if isinstance(event, GuildMessageEvent):
+                    await matcher.send("坏了，这张图色过头了，没发出去！")
+                else:
+                    await bot.send_msg(
+                        user_id=event.user_id if isinstance(event, PrivateMessageEvent) else 0,
+                        group_id=event.group_id if isinstance(event, GroupMessageEvent) else 0,
+                        message=f"坏了，这张图色过头了，没发出去！",
+                    )  
+               
                 if i==len(img)-1:
                     processing = False
                 else:
@@ -249,11 +349,14 @@ async def _run(bot: Bot, keyword: str, W: int, H: int, event: MessageEvent, imgs
                 )
         processing = False
     except Exception as e:
-        await bot.send_msg(
-            user_id=event.user_id if isinstance(event, PrivateMessageEvent) else 0,
-            group_id=event.group_id if isinstance(event, GroupMessageEvent) else 0,
-            message=f"出错了！ {type(e)}：{e}",
-        )
+        if isinstance(event, GuildMessageEvent):
+            await matcher.send(f"出错了！ {type(e)}：{e}")
+        else:
+            await bot.send_msg(
+                user_id=event.user_id if isinstance(event, PrivateMessageEvent) else 0,
+                group_id=event.group_id if isinstance(event, GroupMessageEvent) else 0,
+                message=f"出错了！ {type(e)}：{e}",
+            )  
         logger.error(f"NovelAi 发送了未知错误 {type(e)}：{e}")
         processing = False
         iniit = True
@@ -282,7 +385,31 @@ async def _(
     URL = _url
     iniit = True
     await set_url.send(f"已设置公开链接为{URL}")
-    
+@set_urla.handle()
+async def _(state: T_State, event: GuildMessageEvent, msg: Message = CommandArg()):
+    text = msg.extract_plain_text().strip()
+    if msg:
+        state["url"] = text
+        
+@set_urla.got("url", prompt="请输入要设定的URL")
+async def _(
+    matcher: Matcher,
+    bot: Bot,
+    event: GuildMessageEvent,
+    state: T_State,
+    keyword: str = ArgStr("url"),
+):  
+    global URL
+    global iniit
+    global filepath
+    _url = keyword
+    if _url[-1] != "/":
+        _url = _url + "/"
+    async with aiofiles.open(filepath, mode='w', encoding='utf-8', errors="ignore") as f:
+        await f.write(_url)
+    URL = _url
+    iniit = True
+    await set_urla.send(f"已设置公开链接为{URL}")    
 async def runapi(tag: str, W: int, H: int):   
     global URL
     global init
@@ -504,7 +631,7 @@ async def ETtranslate(_query):
     logger.info(f"EhTag翻译完成"+outt)        
     return outt
 
-async def img(event: MessageEvent):
+async def img(event):
     img_url=[]
     for seg in event.message['image']:
         img_url.append(seg.data["url"])
@@ -529,7 +656,17 @@ async def _(bot: Bot, event: MessageEvent, state: T_State, msg: Message = Comman
         await can.send(f"更新完成")    
     except Exception as e:
         await can.send(f"下载失败{type(e)}：{e}")
-        
+@upa.handle()
+async def _(matcher: Matcher,bot: Bot, event: GuildMessageEvent, state: T_State, msg: Message = CommandArg()):
+    try:
+        await matcher.send(f"开始更新词库文件")
+        async with aiohttp.ClientSession() as session:
+            async with session.get(json_url) as resp:
+                async with aiofiles.open(jsonpath,"wb") as code:
+                    await code.write(await resp.content.read())       
+        await matcher.send(f"更新完成")    
+    except Exception as e:
+        await can.send(f"下载失败{type(e)}：{e}")        
 @scheduler.scheduled_job(
     "cron",
     hour=12,
@@ -550,9 +687,9 @@ async def run():
     global q
     global renshu
     while q.qsize() > 0:
-        bot, keyword, W, H, event, ss = await q.get()
+        matcher,bot, keyword, W, H, event, ss = await q.get()
         try:
-            await _run(bot, keyword, W, H, event, ss)
+            await _run(matcher,bot, keyword, W, H, event, ss)
         except Exception as e:
             pass
         renshu=renshu-1
