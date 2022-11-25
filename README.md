@@ -1,5 +1,5 @@
 # zhenxun_plugin_NovelAi
-
+**目前有第三方api版，本地版，本地附带频道版请到对应分支**  
 这是调用本地stable-diffusion-webui-api的NovelAi作图插件，他能支持中文，内置[EhTagTranslation](https://github.com/EhTagTranslation/Database)词库翻译和百度机翻，支持任务队列  
   
 ## 用法
