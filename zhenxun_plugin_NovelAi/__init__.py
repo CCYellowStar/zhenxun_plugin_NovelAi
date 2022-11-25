@@ -319,16 +319,17 @@ async def runapi(tag: str, W: int, H: int):
 
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.post(URL+"sdapi/v1/txt2img", json=params) as resp:
+            async with session.post(URL+"sdapi/v1/txt2img", json=params, ssl=False) as resp:
                 response = await resp.json()
 
     except Exception as e:
-        raise Exception("请求错误！请再试一次")   
-    for i in response['images']:    
-        img_data = b64decode(i.split(",",1)[1])
+        raise Exception("请求错误！请再试一次")  
     info = json.loads(response['info'])
     meta = info["infotexts"][0]
     print(meta)
+    for i in response['images']:    
+        img_data = b64decode(i)
+
     if Config.get_config("zhenxun_plugin_NovelAi", "DOWNLOAD_nai"):
         async with aiofiles.open(f"{IMAGE_PATH}/temp/NovelAi_{time.time()}.png", 'wb') as fout:
             await fout.write(img_data)
@@ -391,7 +392,7 @@ async def runpicapi(tag: str, W: int, H: int, imgs: list[str]):
         responses=[]
         async with aiohttp.ClientSession() as session:
             for i in paramss:
-                async with session.post(URL+"sdapi/v1/img2img", json=i) as resp:
+                async with session.post(URL+"sdapi/v1/img2img", json=i, ssl=False) as resp:
                     response = await resp.json()
                     responses.append(response)
     except Exception as e:
@@ -400,7 +401,7 @@ async def runpicapi(tag: str, W: int, H: int, imgs: list[str]):
     seees=[]   
     for ii in responses:  
         for i in ii['images']:    
-            img_data = b64decode(i.split(",",1)[1])
+            img_data = b64decode(i)
         info = json.loads(ii['info'])
         meta = info["infotexts"][0]
         imggs.append(img_data)
