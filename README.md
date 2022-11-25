@@ -1,9 +1,10 @@
 # zhenxun_plugin_NovelAi
 
 这是调用本地stable-diffusion-webui-api的NovelAi作图插件，他能支持中文，内置[EhTagTranslation](https://github.com/EhTagTranslation/Database)词库翻译和百度机翻，支持任务队列  
+这个分支适配了qq频道，请安装这个插件https://github.com/mnixry/nonebot-plugin-guild-patch
   
 ## 用法
-  
+**（如果是频道使用所有指令加"/"）**  
 **以文本或文本加图片生成图片(可选长图、横图，默认方图）**  
   
 指令：  
